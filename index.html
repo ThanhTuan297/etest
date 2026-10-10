@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detective Noir Listening Dictation Game</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Special+Elite&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        noir: {
+                            950: '#0b0d13',
+                            900: '#12151e',
+                            800: '#1a1f2c',
+                            700: '#252c3d',
+                            600: '#343f56',
+                        },
+                        crimson: {
+                            600: '#b91c1c',
+                            700: '#991b1b',
+                            800: '#7f1d1d',
+                            accent: '#d32f2f'
+                        },
+                        amber: {
+                            highlight: '#ffc107',
+                        }
+                    },
+                    fontFamily: {
+                        noir: ['"Special Elite"', 'cursive'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #12151e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #343f56;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d32f2f;
+        }
+        .noir-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 8px 10px -6px rgba(211, 47, 47, 0.2);
+        }
+        .typewriter-input {
+            background: rgba(26, 31, 44, 0.8);
+            border-bottom: 2px solid #ffc107;
+            transition: all 0.3s ease;
+        }
+        .typewriter-input:focus {
+            background: rgba(37, 44, 61, 0.9);
+            border-bottom-color: #d32f2f;
+            outline: none;
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-noir-950 text-gray-200 font-sans h-full flex flex-col selection:bg-crimson-accent selection:text-white overflow-x-hidden">
+
+    <!-- HEADER & SAMURAI BOSS DIALOGUE BOX -->
+    <header class="bg-noir-900 border-b border-noir-700 p-4 sticky top-0 z-50 shadow-xl">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Logo / Game Title -->
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-amber-highlight/10 border-2 border-amber-highlight flex items-center justify-center text-amber-highlight shadow-lg">
+                    <i class="fa-solid fa-torii-gate text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif text-xl md:text-2xl font-bold tracking-wider text-amber-highlight uppercase">PHASE 1</h1>
+                    <p class="text-xs text-gray-400 font-noir tracking-widest uppercase">HÃY CHẤP NHẬN THỬ THÁCH CỦA SAMURAI</p>
+                </div>
+            </div>
+
+            <!-- Dialogue Box -->
+            <div class="flex-1 max-w-2xl w-full bg-noir-950/90 border-2 border-crimson-accent rounded-xl p-3 relative flex items-center space-x-3 noir-shadow">
+                <!-- Boss Avatar Silhouette Badge -->
+                <div class="relative flex-shrink-0">
+                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-noir-800 border border-amber-highlight flex items-center justify-center overflow-hidden">
+                        <i class="fa-solid fa-user-ninja text-amber-highlight text-2xl"></i>
+                    </div>
+                    <span class="absolute -bottom-1 -right-1 bg-crimson-accent text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">SAMURAI</span>
+                </div>
+                <!-- Dialogue Text Bubble -->
+                <div class="flex-1">
+                    <div class="text-xs font-bold text-crimson-accent uppercase tracking-wider mb-0.5 font-noir">DTT:</div>
+                    <p id="boss-speech" class="text-sm md:text-base font-serif italic text-gray-200 leading-snug">
+                        "Chào em. Muốn sống sót thì hãy lắng nghe từng từ và điền vào chỗ trống. Đừng để thầy phải thất vọng!"
+                    </p>
+                </div>
+                <!-- Speech triangle pointer -->
+                <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-12 border-r-crimson-accent border-b-8 border-b-transparent"></div>
+            </div>
+
+            <!-- Global Action Status / Exit setup -->
+            <div id="header-nav-actions" class="hidden">
+                <button onclick="returnToSetup()" class="px-4 py-2 bg-noir-800 hover:bg-noir-700 border border-noir-600 text-amber-highlight text-xs font-bold rounded-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Đổi kịch bản
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center my-auto">
+
+        <!-- SETUP SCREEN VIEW -->
+        <section id="setup-screen" class="bg-noir-900 border border-noir-700 rounded-2xl p-6 md:p-8 noir-shadow transition-all duration-300">
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl md:text-3xl font-serif font-bold text-amber-highlight mb-2 uppercase">NHẬP SCRIPT & ĐỘ KHÓ</h2>
+                <p class="text-sm text-gray-400">Dán script và chọn lv, sau đó điền khuyết.</p>
+            </div>
+
+            <!-- DIFFICULTY LEVEL SELECTOR -->
+            <div class="mb-6 bg-noir-950 p-4 rounded-xl border border-noir-700">
+                <label class="block text-xs font-noir text-amber-highlight uppercase tracking-widest mb-3">
+                    <i class="fa-solid fa-sliders mr-1"></i> BLANK DENSITY LEVEL:
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <!-- Easy -->
+                    <label class="relative flex items-start p-3 rounded-lg border border-noir-700 bg-noir-900 hover:border-amber-highlight cursor-pointer transition">
+                        <input type="radio" name="difficulty" value="easy" class="mt-1 text-crimson-accent focus:ring-crimson-accent">
+                        <div class="ml-3 text-xs">
+                            <span class="font-bold text-amber-highlight block text-sm">Dễ (Easy)</span>
+                            <span class="text-gray-400">Đục lỗ thưa (Cứ khoảng mỗi 13 - 15 từ lấy 1 từ). Phù hợp cho mấy con gà.</span>
+                        </div>
+                    </label>
+                    <!-- Medium -->
+                    <label class="relative flex items-start p-3 rounded-lg border border-noir-700 bg-noir-900 hover:border-amber-highlight cursor-pointer transition">
+                        <input type="radio" name="difficulty" value="medium" class="mt-1 text-crimson-accent focus:ring-crimson-accent">
+                        <div class="ml-3 text-xs">
+                            <span class="font-bold text-amber-highlight block text-sm">Trung bình (Medium)</span>
+                            <span class="text-gray-400">Cứ khoảng mỗi 8 - 10 từ lấy 1 từ.</span>
+                        </div>
+                    </label>
+                    <!-- Hardcore -->
+                    <label class="relative flex items-start p-3 rounded-lg border border-amber-highlight bg-noir-900 cursor-pointer transition">
+                        <input type="radio" name="difficulty" value="hard" checked class="mt-1 text-crimson-accent focus:ring-crimson-accent">
+                        <div class="ml-3 text-xs">
+                            <span class="font-bold text-amber-highlight block text-sm">Khó (Hardcore)</span>
+                            <span class="text-gray-400">Đục lỗ dày (Cứ khoảng mỗi 4 - 6 từ lấy 1 từ).</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- SCRIPT TEXTAREA -->
+            <div class="mb-6">
+                <label for="script-input" class="block text-xs font-noir text-amber-highlight uppercase tracking-widest mb-2">
+                    <i class="fa-solid fa-file-pen mr-1"></i> ENGLISH TRANSCRIPT:
+                </label>
+                <textarea id="script-input" rows="7" class="w-full bg-noir-950 border border-noir-700 rounded-xl p-4 text-gray-200 text-sm md:text-base focus:border-amber-highlight focus:outline-none transition leading-relaxed" placeholder="Dán văn bản tiếng Anh vào đây..."></textarea>
+            </div>
+
+            <!-- SAMPLE SCRIPT SELECTOR AND CONTROLS -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-highlight"></i>
+                    <select id="sample-script-select" onchange="loadSelectedSampleScript()" class="bg-noir-950 border border-noir-700 text-amber-highlight text-xs rounded-lg p-2.5 focus:border-amber-highlight outline-none cursor-pointer">
+                        <option value="default">Mẫu chuẩn: Lexicalization of acronym</option>
+                        <option value="sample1">Mẫu 1: (Physics & Philosophy)</option>
+                        <option value="sample2">Mẫu 2:  (Macroeconomics)</option>
+                        <option value="sample3">Mẫu 3:  (Cognitive Neuroscience)</option>
+                    </select>
+                </div>
+
+                <button onclick="startListeningTask()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-crimson-700 to-crimson-600 hover:from-crimson-600 hover:to-crimson-700 text-white font-bold rounded-xl shadow-lg border border-crimson-accent transition transform hover:scale-[1.02] flex items-center justify-center gap-3 text-base">
+                    <i class="fa-solid fa-headphones-alt"></i> BẮT ĐẦU NGHE <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- GAME WORKSPACE VIEW (Hidden initially) -->
+        <section id="game-workspace" class="hidden flex flex-col space-y-6">
+            
+            <!-- AUDIO CONTROL BAR WITH MANUAL PLAY/PAUSE/STOP -->
+            <div class="bg-noir-900 border border-noir-700 rounded-xl p-4 noir-shadow flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <span id="audio-status-indicator" class="w-3 h-3 rounded-full bg-gray-500"></span>
+                    <span id="audio-status-text" class="text-xs font-noir tracking-wider text-amber-highlight uppercase">Đang sẵn sàng</span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <!-- Manual Play / Pause Button -->
+                    <button id="btn-toggle-play" onclick="togglePlayPauseAudio()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-2 border border-emerald-500">
+                        <i id="icon-toggle-play" class="fa-solid fa-play"></i> <span id="label-toggle-play">Phát Âm Thanh</span>
+                    </button>
+
+                    <!-- Manual Stop Button -->
+                    <button onclick="stopAudio()" class="px-3 py-2.5 bg-rose-900 hover:bg-rose-800 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-2 border border-rose-600">
+                        <i class="fa-solid fa-stop"></i> Dừng
+                    </button>
+
+                    <!-- Replay Button -->
+                    <button onclick="replayAudio()" class="px-4 py-2.5 bg-noir-800 hover:bg-noir-700 text-amber-highlight text-xs font-bold rounded-lg shadow transition flex items-center gap-2 border border-noir-600">
+                        <i class="fa-solid fa-rotate-right"></i> Replay
+                    </button>
+
+                    <!-- Listen Slow Button -->
+                    <button onclick="listenSlow()" class="px-4 py-2.5 bg-noir-800 hover:bg-noir-700 text-cyan-400 text-xs font-bold rounded-lg shadow transition flex items-center gap-2 border border-noir-600">
+                        <i class="fa-solid fa-person-walking"></i> Listen Slow (0.7x)
+                    </button>
+                </div>
+            </div>
+
+            <!-- PASSAGE CONTAINER WITH BLANKS -->
+            <div class="bg-noir-900 border border-noir-700 rounded-2xl p-6 md:p-8 noir-shadow relative min-h-[300px] flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-noir-700">
+                        <h3 class="text-sm font-noir tracking-wider text-amber-highlight uppercase"><i class="fa-solid fa-file-shield mr-2"></i> Bài Tập Điền Khuyết ([Enter] / [→] chuyển ô, [←] lùi lại)</h3>
+                        <span id="blanks-counter" class="text-xs bg-noir-950 px-3 py-1 rounded-full border border-noir-700 text-gray-400">Đã điền: 0/0</span>
+                    </div>
+
+                    <!-- Rendered text with interactive inputs -->
+                    <div id="dictation-text-container" class="font-serif text-lg md:text-xl leading-relaxed text-gray-100 space-y-4">
+                        <!-- Dynamically injected passage paragraphs -->
+                    </div>
+                </div>
+
+                <!-- Footer Action: Check Answers -->
+                <div class="mt-8 pt-4 border-t border-noir-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div id="score-summary" class="hidden text-sm font-bold text-amber-highlight">
+                        <!-- Score banner -->
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                        <button onclick="checkAnswers()" class="w-full sm:w-auto px-6 py-3 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 text-sm border border-emerald-500">
+                            <i class="fa-solid fa-check-double"></i> KIỂM TRA ĐÁP ÁN (CHECK ANSWERS)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- RESULT MODAL OVERLAY -->
+    <div id="result-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div id="result-modal-card" class="bg-noir-900 border-2 border-amber-highlight rounded-2xl max-w-md w-full p-6 text-center noir-shadow transform transition-all scale-95 opacity-0">
+            <div id="modal-icon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-4 shadow-lg">
+                <!-- Icon inserted via JS -->
+            </div>
+            <h3 id="modal-title" class="text-2xl font-serif font-bold text-amber-highlight mb-2">KẾT QUẢ THỬ THÁCH</h3>
+            <p id="modal-score" class="text-lg font-bold text-gray-300 mb-3">Điểm số: 85%</p>
+            <p id="modal-boss-remark" class="text-sm italic text-gray-400 mb-6 bg-noir-950 p-3 rounded-lg border border-noir-700">
+                <!-- Boss remark -->
+            </p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeModalAndRetry()" class="px-5 py-2.5 bg-noir-800 hover:bg-noir-700 border border-noir-600 text-amber-highlight text-xs font-bold rounded-lg transition">
+                    Làm lại / Sửa lỗi
+                </button>
+                <button onclick="returnToSetup()" class="px-5 py-2.5 bg-crimson-700 hover:bg-crimson-600 text-white text-xs font-bold rounded-lg shadow transition">
+                    Kịch bản mới
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT ENGINE -->
+    <script>
+        const SAMPLE_SCRIPTS = {
+            default: `Lexicalization of an acronym is the linguistic process where a shortened abbreviation or acronym loses its connection to its original multi-word phrase and fully transitions into an ordinary, independent word in the lexicon.`,
+            sample1: `The fundamental dichotomy between classical determinism and quantum indeterminacy forces epistemologists to re-examine the very nature of empirical observation. In the subatomic realm, particles exhibit wave-particle duality, existing in a state of superposition until an act of measurement causes the collapse of the wave function. This inherent unpredictability challenges the long-held assumption that physical reality exists independently of an observer. Furthermore, quantum entanglement introduces a non-local phenomenon where entangled particles instantaneously correlate across vast distance, explicitly violating the principle of local realism. Consequently, contemporary physicists and philosophers are compelled to construct nuanced frameworks that transcend rudimentary Newtonian paradigms, acknowledging that objective truth may be far more elusive and interconnected than previously postulated.`,
+            sample2: `During periods of prolonged macroeconomic volatility, central banks frequently encounter the limits of conventional monetary policy, necessitating the deployment of unorthodox interventions such as quantitative easing. By purchasing long-term government securities, monetary authorities attempt to inject liquidity into the banking system, thereby depressing yield curves and encouraging capital allocation toward riskier assets. However, critics argue that such continuous liquidity infusion runs the risk of inflating asset bubbles and destabilizing financial markets. Furthermore, when nominal interest rates approach the zero lower bound, economies risk slipping into a liquidity trap—a precarious condition where aggressive monetary stimulus fails to induce consumer spending or business investment due to entrenched deflationary expectations and widespread risk aversion.`,
+            sample3: `Decoding the neural correlates of human consciousness remains one of the most enigmatic endeavors in cognitive neuroscience. While functional neuroimaging has illuminated specific cerebral regions activated during perceptual tasks, bridging the explanatory gap between subjective experience and objective neurobiological processes persists as a formidable challenge. The prevailing hypothesis suggests that consciousness emerges from synchronized high-frequency oscillations distributed across intricate thalamocortical networks. Nevertheless, alternative theories argue that mere computational complexity is insufficient to explain sentience; rather, integrated information architecture must reach a critical threshold of functional cohesion. Disentangling these competing models requires rigorously isolating subliminal cognitive processing from genuine conscious awareness.`
+        };
+
+        let currentScriptText = "";
+        let blankDataList = []; // stores { id, answer }
+        let isSpeaking = false;
+        let isPaused = false;
+        let currentUtterance = null;
+        let speechChunks = [];
+        let currentChunkIndex = 0;
+        let currentSpeechRate = 1.0;
+
+        // Boss Taunts Datasets
+        const replayTaunts = [
+            "Tai để làm cảnh à? Nghe có một câu cũng không xong!",
+            "Lại nghe lại? Lần thứ mấy rồi đấy!",
+            "Tập trung vào, đi thi không có chuyện nghe lại đâu"
+        ];
+
+        const slowTaunts = [
+            "Yếu kém! Phải để mở chậm mới nghe được à",
+            "Nghe chậm thế này thì bao giờ mới được 9.0 listening"
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Reset input field on load to ensure lightweight start
+            const scriptInput = document.getElementById('script-input');
+            if(scriptInput) scriptInput.value = SAMPLE_SCRIPTS.default;
+            
+            // Clean up speech synthesis queue on unload to save memory
+            window.addEventListener('beforeunload', () => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+            });
+        });
+
+        function loadSelectedSampleScript() {
+            const selectEl = document.getElementById('sample-script-select');
+            const selectedKey = selectEl.value;
+            if (SAMPLE_SCRIPTS[selectedKey]) {
+                document.getElementById('script-input').value = SAMPLE_SCRIPTS[selectedKey];
+                showBossSpeech("Đã tải kịch bản mẫu. Bấm nút bắt đầu khi em đã sẵn sàng!");
+            }
+        }
+
+        function showBossSpeech(text) {
+            const speechEl = document.getElementById('boss-speech');
+            if(!speechEl) return;
+            speechEl.style.opacity = '0';
+            setTimeout(() => {
+                speechEl.textContent = `"${text}"`;
+                speechEl.style.opacity = '1';
+            }, 150);
+        }
+
+        function startListeningTask() {
+            const rawText = document.getElementById('script-input').value.trim();
+            if (!rawText) {
+                showBossSpeech("Script đang trống! Em đùa tôi à");
+                return;
+            }
+            currentScriptText = rawText;
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-workspace').classList.remove('hidden');
+            document.getElementById('header-nav-actions').classList.remove('hidden');
+
+            renderDictationPassage(rawText);
+            showBossSpeech("Lắng nghe cho kỹ vào");
+            
+            // Initial reset audio button UI
+            updateAudioUI('stopped');
+        }
+
+        function returnToSetup() {
+            stopAudio();
+            document.getElementById('game-workspace').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+            document.getElementById('header-nav-actions').classList.add('hidden');
+            showBossSpeech("Chào em. Hãy lắng nghe từng từ và điền vào chỗ trống. Đừng để thầy phải thất vọng!");
+        }
+
+        function renderDictationPassage(text) {
+            blankDataList = [];
+            const container = document.getElementById('dictation-text-container');
+            container.innerHTML = '';
+
+            const difficultyEl = document.querySelector('input[name="difficulty"]:checked');
+            const difficulty = difficultyEl ? difficultyEl.value : 'hard';
+
+            let moduloValue = 5; // Hardcore default
+            if (difficulty === 'easy') {
+                moduloValue = 14; 
+            } else if (difficulty === 'medium') {
+                moduloValue = 9; 
+            }
+
+            const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g) || [text];
+            let blankIdCounter = 0;
+
+            sentences.forEach((sentence) => {
+                const p = document.createElement('p');
+                p.className = 'mb-3 leading-loose';
+
+                const words = sentence.trim().split(/\s+/);
+                
+                words.forEach((word, wIndex) => {
+                    const cleanMatch = word.match(/^([^\w]*)([\wÀ-ỹ]+)([^\w]*)$/);
+                    
+                    if (cleanMatch) {
+                        const prefix = cleanMatch[1];
+                        const coreWord = cleanMatch[2];
+                        const suffix = cleanMatch[3];
+
+                        const isTargetWord = coreWord.length >= 3 && (wIndex % moduloValue === 2 || words.length <= 3);
+
+                        if (isTargetWord) {
+                            blankIdCounter++;
+                            const currentId = `blank-${blankIdCounter}`;
+                            blankDataList.push({
+                                id: currentId,
+                                answer: coreWord
+                            });
+
+                            const span = document.createElement('span');
+                            span.className = 'inline-block mx-1 my-1';
+                            span.innerHTML = `${prefix}<input type="text" id="${currentId}" data-answer="${coreWord}" placeholder="[ ___ ]" class="typewriter-input px-2.5 py-1 text-amber-highlight text-sm md:text-base font-sans rounded text-center w-28 md:w-36" oninput="updateBlanksCounter()" onkeydown="handleInputKeydown(event, ${blankIdCounter})">${suffix}`;
+                            p.appendChild(span);
+                        } else {
+                            const textNode = document.createTextNode((wIndex > 0 ? ' ' : '') + word);
+                            p.appendChild(textNode);
+                        }
+                    } else {
+                        const textNode = document.createTextNode((wIndex > 0 ? ' ' : '') + word);
+                        p.appendChild(textNode);
+                    }
+                });
+
+                container.appendChild(p);
+            });
+
+            updateBlanksCounter();
+        }
+
+        function handleInputKeydown(event, currentIdNum) {
+            if (event.key === 'Enter' || event.key === 'ArrowRight') {
+                event.preventDefault();
+                const nextInput = document.getElementById(`blank-${currentIdNum + 1}`);
+                if (nextInput) {
+                    nextInput.focus();
+                    nextInput.select();
+                }
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                const prevInput = document.getElementById(`blank-${currentIdNum - 1}`);
+                if (prevInput) {
+                    prevInput.focus();
+                    prevInput.select();
+                }
+            }
+        }
+
+        function updateBlanksCounter() {
+            let filledCount = 0;
+            blankDataList.forEach(item => {
+                const input = document.getElementById(item.id);
+                if (input && input.value.trim().length > 0) filledCount++;
+            });
+            document.getElementById('blanks-counter').textContent = `Đã điền: ${filledCount}/${blankDataList.length}`;
+        }
+
+        function prepareSpeechChunks(fullText) {
+            // Split long text into sentence chunks to prevent browser speech cancellation bugs
+            const rawSentences = fullText.match(/[^.!?]+[.!?]+(\s|$)/g) || [fullText];
+            speechChunks = [];
+            let currentGroup = "";
+            
+            rawSentences.forEach(s => {
+                if ((currentGroup + s).length > 180) {
+                    if (currentGroup.trim()) speechChunks.push(currentGroup.trim());
+                    currentGroup = s;
+                } else {
+                    currentGroup += s;
+                }
+            });
+            if (currentGroup.trim()) {
+                speechChunks.push(currentGroup.trim());
+            }
+        }
+
+        function playSpeech(rate = 1.0) {
+            if (!('speechSynthesis' in window)) {
+                alert("Trình duyệt của bạn không hỗ trợ Web Speech API.");
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            currentSpeechRate = rate;
+            prepareSpeechChunks(currentScriptText);
+            currentChunkIndex = 0;
+
+            if (speechChunks.length === 0) return;
+
+            speakNextChunk();
+        }
+
+        function speakNextChunk() {
+            if (currentChunkIndex >= speechChunks.length) {
+                isSpeaking = false;
+                isPaused = false;
+                updateAudioUI('stopped');
+                currentChunkIndex = 0;
+                return;
+            }
+
+            const textChunk = speechChunks[currentChunkIndex];
+            const utterance = new SpeechSynthesisUtterance(textChunk);
+            utterance.rate = currentSpeechRate;
+            utterance.lang = 'en-US';
+
+            utterance.onstart = () => {
+                isSpeaking = true;
+                isPaused = false;
+                updateAudioUI('playing');
+            };
+
+            utterance.onend = () => {
+                currentChunkIndex++;
+                speakNextChunk();
+            };
+
+            utterance.onerror = (e) => {
+                // Safely handle browser synthesis interruptions without throwing unhandled exceptions
+                console.warn("Speech synthesis note:", e);
+                if (!isPaused) {
+                    isSpeaking = false;
+                    isPaused = false;
+                    updateAudioUI('stopped');
+                }
+            };
+
+            currentUtterance = utterance;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function togglePlayPauseAudio() {
+            if (!('speechSynthesis' in window)) return;
+
+            if (!isSpeaking) {
+                playSpeech(1.0);
+            } else if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+                isPaused = false;
+                updateAudioUI('playing');
+            } else if (isSpeaking && !window.speechSynthesis.paused) {
+                window.speechSynthesis.pause();
+                isPaused = true;
+                updateAudioUI('paused');
+            }
+        }
+
+        function stopAudio() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            isSpeaking = false;
+            isPaused = false;
+            currentChunkIndex = 0;
+            updateAudioUI('stopped');
+        }
+
+        function replayAudio() {
+            playSpeech(1.0);
+            const randomTaunt = replayTaunts[Math.floor(Math.random() * replayTaunts.length)];
+            showBossSpeech(randomTaunt);
+        }
+
+        function listenSlow() {
+            playSpeech(0.7);
+            const randomTaunt = slowTaunts[Math.floor(Math.random() * slowTaunts.length)];
+            showBossSpeech(randomTaunt);
+        }
+
+        function updateAudioUI(state) {
+            const indicator = document.getElementById('audio-status-indicator');
+            const statusText = document.getElementById('audio-status-text');
+            const icon = document.getElementById('icon-toggle-play');
+            const label = document.getElementById('label-toggle-play');
+            const btn = document.getElementById('btn-toggle-play');
+
+            if (!indicator) return;
+
+            if (state === 'playing') {
+                indicator.className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
+                statusText.textContent = "Đang phát...";
+                icon.className = "fa-solid fa-pause";
+                label.textContent = "Tạm Dừng";
+                btn.className = "px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-2 border border-amber-400";
+            } else if (state === 'paused') {
+                indicator.className = "w-3 h-3 rounded-full bg-amber-highlight animate-ping";
+                statusText.textContent = "Tạm dừng";
+                icon.className = "fa-solid fa-play";
+                label.textContent = "Tiếp Tục Phát";
+                btn.className = "px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-2 border border-emerald-500";
+            } else {
+                indicator.className = "w-3 h-3 rounded-full bg-gray-500";
+                statusText.textContent = "Đã dừng";
+                icon.className = "fa-solid fa-play";
+                label.textContent = "Phát Âm Thanh";
+                btn.className = "px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-2 border border-emerald-500";
+            }
+        }
+
+        function checkAnswers() {
+            let correctCount = 0;
+            let totalBlanks = blankDataList.length;
+
+            if (totalBlanks === 0) return;
+
+            blankDataList.forEach(item => {
+                const inputEl = document.getElementById(item.id);
+                if (!inputEl) return;
+
+                const userVal = inputEl.value.trim().toLowerCase();
+                const expectedVal = item.answer.toLowerCase();
+
+                const cleanUserVal = userVal.replace(/^[^\w]+|[^\w]+$/g, '');
+                const cleanExpectedVal = expectedVal.replace(/^[^\w]+|[^\w]+$/g, '');
+
+                if (cleanUserVal === cleanExpectedVal) {
+                    correctCount++;
+                    inputEl.className = "typewriter-input px-2.5 py-1 text-emerald-400 text-sm md:text-base font-sans rounded text-center w-28 md:w-36 border-b-2 !border-emerald-500 bg-emerald-950/40";
+                    inputEl.title = "Chính xác!";
+                } else {
+                    inputEl.className = "typewriter-input px-2.5 py-1 text-crimson-accent text-sm md:text-base font-sans rounded text-center w-28 md:w-36 border-b-2 !border-crimson-accent bg-crimson-950/40";
+                    // Display correct answer in parentheses next to user input or inside value/title
+                    if (inputEl.value.trim() === "") {
+                        inputEl.value = `___ (${item.answer})`;
+                    } else {
+                        inputEl.value = `${inputEl.value} (${item.answer})`;
+                    }
+                    inputEl.title = `Đáp án đúng: ${item.answer}`;
+                }
+            });
+
+            const scorePercent = Math.round((correctCount / totalBlanks) * 100);
+            showResultModal(scorePercent, correctCount, totalBlanks);
+        }
+
+        function showResultModal(score, correct, total) {
+            const modal = document.getElementById('result-modal');
+            const card = document.getElementById('result-modal-card');
+            const iconEl = document.getElementById('modal-icon');
+            const titleEl = document.getElementById('modal-title');
+            const scoreEl = document.getElementById('modal-score');
+            const remarkEl = document.getElementById('modal-boss-remark');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            scoreEl.textContent = `Số câu đúng: ${correct}/${total} (${score}%)`;
+
+            if (score >= 80) {
+                iconEl.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-4 shadow-lg bg-emerald-900/80 text-emerald-400 border border-emerald-500";
+                iconEl.innerHTML = '<i class="fa-solid fa-award"></i>';
+                titleEl.textContent = "XUẤT SẮC! HOÀN THÀNH THỬ THÁCH";
+                const remark = "Đó có vậy thôi";
+                remarkEl.textContent = `"${remark}"`;
+                showBossSpeech(remark);
+            } else {
+                iconEl.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-4 shadow-lg bg-crimson-900/80 text-crimson-accent border border-crimson-accent";
+                iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                titleEl.textContent = "CHƯA ĐẠT YÊU CẦU";
+                const remark = "Nghe kiểu này sao được 9.0 listening?";
+                remarkEl.textContent = `"${remark}"`;
+                showBossSpeech(remark);
+            }
+        }
+
+        function closeModalAndRetry() {
+            const modal = document.getElementById('result-modal');
+            const card = document.getElementById('result-modal-card');
+            card.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+    </script>
+</body>
+</html>
