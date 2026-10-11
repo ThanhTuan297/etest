@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phase 1 - Bảng điều tra</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600&family=Permanent+Marker&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0d0f17;
+      --amber: #f0b429;
+      --string: #c1272d;
+      --string-hot: #ff4d4d;
+      --serif: "Playfair Display", "Times New Roman", serif;
+      --sans: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --marker: "Permanent Marker", "Comic Sans MS", cursive;
+      --header-h: 84px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { background: var(--navy); color: #f2efe8; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; }
+
+    /* ================= HEADER ================= */
+    .topbar {
+      height: var(--header-h);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 0 clamp(14px, 4vw, 56px);
+      background: var(--navy);
+      border-bottom: 2px solid var(--amber);
+    }
+    .left { display: flex; align-items: center; gap: clamp(10px, 2vw, 18px); min-width: 0; }
+
+    /* Chỉ logo này bấm được */
+    .brand {
+      flex: none; display: grid; place-items: center;
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 2px solid var(--amber); background: rgba(240, 180, 41, 0.08);
+      cursor: pointer; transition: background 0.2s, transform 0.2s;
+    }
+    .brand:hover { background: rgba(240, 180, 41, 0.2); transform: scale(1.06); }
+    .brand svg { width: 28px; height: 28px; fill: none; stroke: var(--amber); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Chữ trang trí, không bấm được */
+    .heading { cursor: default; user-select: none; min-width: 0; }
+    .heading h1 { font-family: var(--serif); font-weight: 800; font-size: clamp(1.1rem, 3.4vw, 1.7rem); letter-spacing: 0.06em; color: var(--amber); line-height: 1.1; }
+    .heading p { margin-top: 4px; font-size: clamp(0.55rem, 1.8vw, 0.72rem); font-weight: 500; letter-spacing: 0.16em; color: #8d93a5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Nút Sáng / Tối: chỉ có 2 biểu tượng */
+    .mode {
+      position: relative; flex: none; display: grid; grid-template-columns: 1fr 1fr; align-items: center;
+      width: 84px; height: 40px; border-radius: 999px; padding: 0;
+      border: 1.5px solid rgba(240, 180, 41, 0.6); background: #141826; cursor: pointer;
+    }
+    .mode::before {
+      content: ""; position: absolute; top: 3px; left: 3px; width: calc(50% - 3px); height: calc(100% - 6px);
+      border-radius: 999px; background: rgba(240, 180, 41, 0.28);
+      transition: transform 0.3s ease;
+    }
+    body[data-mode="light"] .mode::before { transform: translateX(100%); }
+    .mode span { position: relative; text-align: center; font-size: 1.05rem; line-height: 1; }
+
+    /* ================= BẢNG ĐIỀU TRA ================= */
+    .board {
+      position: relative; isolation: isolate; overflow: hidden;
+      min-height: calc(100vh - var(--header-h)); min-height: calc(100svh - var(--header-h));
+      display: grid; place-items: center;
+      padding: clamp(36px, 7vh, 80px) clamp(14px, 4vw, 56px);
+      --mx: 50%; --my: 40%;
+      transition: background-color 0.5s ease;
+    }
+    .light { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* Chế độ tối: tường tối + đèn pin rọi theo con trỏ */
+    body[data-mode="dark"] .board { background-color: #11141d; }
+    body[data-mode="dark"] .light {
+      background:
+        radial-gradient(circle 360px at var(--mx) var(--my), rgba(255, 214, 150, 0.22), transparent 70%),
+        radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.78) 100%);
+    }
+    /* Chế độ sáng: tường nâu ấm + ánh sáng dịu */
+    body[data-mode="light"] .board {
+      background-color: #c9ab82;
+      background-image: radial-gradient(rgba(90, 55, 20, 0.18) 1px, transparent 1.6px);
+      background-size: 9px 9px;
+    }
+    body[data-mode="light"] .light {
+      background:
+        radial-gradient(circle 560px at var(--mx) var(--my), rgba(255, 255, 255, 0.35), transparent 70%),
+        radial-gradient(ellipse at center, transparent 50%, rgba(80, 50, 20, 0.38) 100%);
+    }
+
+    .grid {
+      width: 100%; max-width: 1000px;
+      display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between;
+      column-gap: clamp(12px, 5vw, 90px);
+      row-gap: clamp(40px, 11vh, 110px);
+      justify-items: center;
+    }
+
+    /* ---------- Thẻ Polaroid ---------- */
+    .card {
+      --cw: clamp(92px, 22vw, 220px);
+      --rot: 0deg; --dy: 0em;
+      position: relative; z-index: 1; display: block; width: var(--cw);
+      font-size: calc(var(--cw) / 16);
+      padding: 0.75em 0.75em 0;
+      background: #f4f1ea; text-decoration: none; cursor: pointer;
+      box-shadow: 0 0.6em 1.6em rgba(0, 0, 0, 0.5);
+      transform: rotate(var(--rot)) translateY(var(--dy));
+      transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.35s, box-shadow 0.35s;
+    }
+    body[data-mode="dark"] .card { filter: brightness(0.7); }
+    .card:hover, .card:focus-visible {
+      z-index: 20; outline: none;
+      transform: rotate(0deg) scale(1.18);
+      box-shadow: 0 1em 2.4em rgba(0, 0, 0, 0.65);
+    }
+    body[data-mode="dark"] .card:hover, body[data-mode="dark"] .card:focus-visible { filter: brightness(1.05); }
+
+    .pin {
+      position: absolute; left: 50%; top: 0; width: 1.7em; height: 1.7em;
+      transform: translate(-50%, -30%); border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ff8a80, #c1272d 55%, #7a1114);
+      box-shadow: 0 0.25em 0.4em rgba(0, 0, 0, 0.5);
+    }
+    .photo {
+      aspect-ratio: 1 / 1.05; overflow: hidden; background: #1b1f2c;
+      display: grid; place-items: center;
+    }
+    .photo img { display: block; width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.35) contrast(1.05); }
+    .photo.noimg::after { content: "?"; font-family: var(--marker); font-size: 4em; color: #4a5068; }
+    .caption {
+      height: 3em; display: grid; place-items: center;
+      font-family: var(--marker); font-size: 1.15em; letter-spacing: 0.04em; color: #b3201f; white-space: nowrap;
+    }
+
+    /* ---------- Dây đỏ (SVG phủ lên trên các thẻ) ---------- */
+    .strings { position: absolute; left: 0; top: 0; z-index: 30; pointer-events: none; overflow: visible; }
+    .line { fill: none; stroke: var(--string); stroke-width: 2.6; stroke-linecap: round; filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.45)); transition: stroke 0.25s, stroke-width 0.25s; }
+    .line.hot { stroke: var(--string-hot); stroke-width: 3.6; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.85)); }
+    .head { stroke: #5c0d10; stroke-width: 1; }
+
+    @media (max-width: 520px) {
+      :root { --header-h: 72px; }
+      .brand { width: 44px; height: 44px; }
+      .brand svg { width: 24px; height: 24px; }
+      .mode { width: 72px; height: 36px; }
+      .line { stroke-width: 2; }
+      .line.hot { stroke-width: 3; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card, .mode::before, .line, .board { transition: none; }
+    }
+  </style>
+</head>
+<body data-mode="dark">
+
+  <header class="topbar">
+    <div class="left">
+      <!-- Chỉ logo này là liên kết -->
+      <a class="brand" href="trangchu.html" aria-label="Về trang chủ">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M2.5 6.5Q12 8.8 21.5 6.5"/><path d="M5 10.5h14"/>
+          <path d="M7 8.4V20M17 8.4V20M12 8.8v1.7"/>
+        </svg>
+      </a>
+      <!-- Chữ trang trí, không bấm được -->
+      <div class="heading">
+        <h1>PHASE 1</h1>
+        <p>CÂU HỎI &amp; BẢNG ĐIỀU TRA</p>
+      </div>
+    </div>
+
+    <button type="button" class="mode" id="modeBtn" aria-label="Chuyển chế độ sáng / tối" aria-pressed="false">
+      <span aria-hidden="true">🌙</span><span aria-hidden="true">☀️</span>
+    </button>
+  </header>
+
+  <main class="board" id="board">
+    <div class="light" aria-hidden="true"></div>
+    <div class="grid" id="grid"></div>
+    <svg class="strings" id="strings" aria-hidden="true"></svg>
+  </main>
+
+  <script>
+    /* ==========================================================
+       DỮ LIỆU: đổi ảnh / tiêu đề / liên kết / dây nối tại đây
+       (connections: id của các thẻ mà thẻ này nối dây tới)
+    ========================================================== */
+    const evidenceList = [
+      { id: "1", image: "1.jpg", title: "SUSPECT 1", link: "baitap1.html", connections: ["2", "4"] },
+      { id: "2", image: "2.jpg", title: "SUSPECT 2", link: "baitap2.html", connections: ["3", "5"] },
+      { id: "3", image: "3.jpg", title: "SUSPECT 3", link: "baitap3.html", connections: ["6"] },
+      { id: "4", image: "4.jpg", title: "SUSPECT 4", link: "baitap4.html", connections: ["5"] },
+      { id: "5", image: "5.jpg", title: "SUSPECT 5", link: "baitap5.html", connections: ["6"] },
+      { id: "6", image: "6.jpg", title: "SUSPECT 6", link: "baitap6.html", connections: [] }
+    ];
+
+    // Độ nghiêng (độ) và lệch dọc (em) của từng thẻ để bố cục trông tự nhiên
+    const TILTS   = [-3, 2.5, -2, 2, -2.5, 3];
+    const OFFSETS = [0, 1, -0.6, 0.8, -0.8, 0.4];
+
+    const NS = "http://www.w3.org/2000/svg";
+    const board = document.getElementById("board");
+    const grid = document.getElementById("grid");
+    const svg = document.getElementById("strings");
+
+    /* ---------- Tạo thẻ ---------- */
+    const cards = {}; // id -> { el, pin }
+    evidenceList.forEach((item, i) => {
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = item.link;
+      a.setAttribute("aria-label", item.title);
+      a.style.setProperty("--rot", TILTS[i % TILTS.length] + "deg");
+      a.style.setProperty("--dy", OFFSETS[i % OFFSETS.length] + "em");
+
+      const pin = document.createElement("span");
+      pin.className = "pin";
+      pin.setAttribute("aria-hidden", "true");
+
+      const photo = document.createElement("div");
+      photo.className = "photo";
+      const img = document.createElement("img");
+      img.src = item.image;
+      img.alt = item.title;
+      img.addEventListener("error", () => { img.remove(); photo.classList.add("noimg"); });
+      photo.appendChild(img);
+
+      const cap = document.createElement("div");
+      cap.className = "caption";
+      cap.textContent = item.title;
+
+      a.append(pin, photo, cap);
+      grid.appendChild(a);
+      cards[item.id] = { el: a, pin };
+    });
+
+    /* ---------- Chuẩn bị SVG: gradient ghim + dây + đầu ghim ---------- */
+    svg.innerHTML =
+      '<defs><radialGradient id="pinGrad" cx="35%" cy="30%" r="75%">' +
+      '<stop offset="0" stop-color="#ff8a80"/><stop offset="0.55" stop-color="#c1272d"/><stop offset="1" stop-color="#7a1114"/>' +
+      '</radialGradient></defs>';
+    const gLines = document.createElementNS(NS, "g");
+    const gHeads = document.createElementNS(NS, "g");
+    svg.append(gLines, gHeads);
+
+    const links = [];
+    const seen = new Set();
+    evidenceList.forEach(item => {
+      item.connections.forEach(otherId => {
+        if (!cards[otherId]) return;
+        const key = [item.id, otherId].sort().join("-");
+        if (seen.has(key)) return;
+        seen.add(key);
+        const path = document.createElementNS(NS, "path");
+        path.setAttribute("class", "line");
+        gLines.appendChild(path);
+        links.push({ a: item.id, b: otherId, el: path, k: links.length });
+      });
+    });
+
+    const heads = {};
+    evidenceList.forEach(item => {
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("class", "head");
+      c.setAttribute("fill", "url(#pinGrad)");
+      gHeads.appendChild(c);
+      heads[item.id] = c;
+    });
+
+    /* ---------- Tính tọa độ TÂM ghim theo thời gian thực & vẽ dây võng ---------- */
+    const f = n => n.toFixed(1);
+
+    function sagPath(p, q, k) {
+      const dx = q.x - p.x, dy = q.y - p.y, dist = Math.hypot(dx, dy);
+      const sag = Math.min(110, 26 + dist * 0.2);       // độ võng do trọng lực
+      let mx = (p.x + q.x) / 2;
+      const my = (p.y + q.y) / 2 + sag;                  // điểm điều khiển thấp hơn -> dây võng xuống
+      if (Math.abs(dx) < dist * 0.35) mx += (k % 2 ? 1 : -1) * Math.min(28, dist * 0.08); // dây gần thẳng đứng: lệch nhẹ sang bên
+      return "M" + f(p.x) + " " + f(p.y) + " Q" + f(mx) + " " + f(my) + " " + f(q.x) + " " + f(q.y);
+    }
+
+    function update() {
+      const br = board.getBoundingClientRect();
+      svg.setAttribute("width", br.width);
+      svg.setAttribute("height", br.height);
+
+      const pts = {};
+      for (const id in cards) {
+        const r = cards[id].pin.getBoundingClientRect();   // đã tính cả xoay + phóng to của thẻ
+        pts[id] = { x: r.left + r.width / 2 - br.left, y: r.top + r.height / 2 - br.top, r: r.width / 2 };
+        const c = heads[id];
+        c.setAttribute("cx", f(pts[id].x));
+        c.setAttribute("cy", f(pts[id].y));
+        c.setAttribute("r", f(pts[id].r));
+      }
+      links.forEach(l => l.el.setAttribute("d", sagPath(pts[l.a], pts[l.b], l.k)));
+    }
+
+    // Cập nhật liên tục trong lúc thẻ đang phóng to / thu nhỏ để dây bám theo ghim
+    let raf = 0, until = 0;
+    function pump(ms) {
+      until = performance.now() + ms;
+      if (!raf) raf = requestAnimationFrame(tick);
+    }
+    function tick() {
+      update();
+      raf = performance.now() < until ? requestAnimationFrame(tick) : 0;
+    }
+
+    /* ---------- Hover: sáng dây nối với ghim của thẻ ---------- */
+    function setHot(id, on) {
+      links.forEach(l => { if (l.a === id || l.b === id) l.el.classList.toggle("hot", on); });
+      pump(500);
+    }
+    for (const id in cards) {
+      const el = cards[id].el;
+      el.addEventListener("pointerenter", () => setHot(id, true));
+      el.addEventListener("pointerleave", () => setHot(id, false));
+      el.addEventListener("focus", () => setHot(id, true));
+      el.addEventListener("blur", () => setHot(id, false));
+    }
+
+    window.addEventListener("resize", update);
+    window.addEventListener("load", update);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
+
+    /* ---------- Đèn rọi theo con trỏ ---------- */
+    let moving = false, mouse = null;
+    board.addEventListener("pointermove", e => {
+      mouse = e;
+      if (moving) return;
+      moving = true;
+      requestAnimationFrame(() => {
+        const r = board.getBoundingClientRect();
+        board.style.setProperty("--mx", (mouse.clientX - r.left) + "px");
+        board.style.setProperty("--my", (mouse.clientY - r.top) + "px");
+        moving = false;
+      });
+    });
+    board.addEventListener("pointerleave", () => {
+      board.style.setProperty("--mx", "50%");
+      board.style.setProperty("--my", "40%");
+    });
+
+    /* ---------- Chuyển sáng / tối ---------- */
+    const MODE_KEY = "vocab_board_mode";
+    const modeBtn = document.getElementById("modeBtn");
+    function setMode(m) {
+      document.body.dataset.mode = m;
+      modeBtn.setAttribute("aria-pressed", m === "light");
+      try { localStorage.setItem(MODE_KEY, m); } catch (e) {}
+    }
+    try { const saved = localStorage.getItem(MODE_KEY); if (saved === "light" || saved === "dark") setMode(saved); } catch (e) {}
+    modeBtn.addEventListener("click", () => setMode(document.body.dataset.mode === "dark" ? "light" : "dark"));
+
+    update();
+  </script>
+</body>
+</html>
